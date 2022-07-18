@@ -1,10 +1,10 @@
-package org.mdnote.apiWatch.aggregator.calculator;
+package org.mdnote.apiMonitor.aggregator.calculator;
 
 import java.util.List;
 import java.util.Optional;
 
-import org.mdnote.apiWatch.AggregateResult;
-import org.mdnote.apiWatch.Metric;
+import org.mdnote.apiMonitor.AggregateResult;
+import org.mdnote.apiMonitor.Metric;
 
 public class MaxRespCalculator implements ICalculator {
 

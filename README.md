@@ -3,20 +3,57 @@
 
 我们希望设计开发一个小的框架，能够获取接口调用的各种统计信息，比如，响应时间的最大值（max）、最小值（min）、平均值（avg）、百分位值（percentile）、接口调用次数（count）、频率（tps） 等，并且支持将统计结果以各种显示格式（比如：JSON格式、网页格式、自定义显示格式等）输出到各种终端（Console命令行、HTTP网页、Email、日志文件、自定义输出终端等），以方便查看。
 
-拆解一下：
-1. 需要对接口进行打点，采集每一次响应时间和开始请求时间
-1. 对响应时间、请求时间进行存储
-1. 定时对响应时间、请求时间进行聚合分析
-1. 姜聚合后的结果导出到终端
+
+##  设计思路
+
+OOA -> OOD -> OOP
+
+###  事前：捋清楚需求
+
+1. 需要对接口的乡相应时间进行打点采集
+2. 采集后需要存储到某个介质中
+3. 周期性/立即对指标进行聚合分析
+4. 聚合分析后的结果进行格式或
+5. 将格式化后的结果输出到终端
+
+###  第一步：根据需求列表找到类的定义
+* 打点采集——Collector
+* 存储介质——Storage
+* 聚合工具——Aggregate
+* 输出终端——Terminal
+* 输出格式化——Formatable
+* 周期上报/立即上报——Reporter
+
+###  第二部：定义类的属性和方法
+
+见代码
+
+###  第三步：梳理类和类之间的关系
+
+* 打点采集时于 Collector 打交道，Collector 需要依赖 Storage 存储数据 
+，Reporter 负责任务调度，统筹整个聚合统计工作。他需要依赖 Storage 获取数据，Aggregate 聚合数据、Terminal 输出数据，
+* Terminal 构造时需要依赖 Format，Format 由用户构造 Terminal 时传入
+
+除了 Reporter 外所有的类都依赖它
+
+###  第四步：编写入口程序
+
+Reporter 定时触发
+
+##  环境搭建
+
+Redis 时序数据库搭建（RedisTimeSeries）
+
+```bash
+$ vagrant init centos/7
+$ vagrant up
+
+# install  redis
+$ sdocker run -p 6379:6379 -it --rm redislabs/redistimeseries
 
 
-##  版本安排
-
-V1.0
-
-1. 对接口进行打点采集
-2. 将数据存储到 Redis 中
-3. 将结果展示到终端
+https://cloud.tencent.com/developer/news/491464
+```
 
 
 ##  重构代码
@@ -35,7 +72,6 @@ V1.0
 
 
 ##  单元测试指导代码重构
-
 下面是一个转账案例，用到了分布式锁 RedisDistributedLock 和 远程服务通讯 walletRpcService
 ```java
 public class Transaction {

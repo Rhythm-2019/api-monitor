@@ -1,4 +1,4 @@
-package org.mdnote.apiWatch.util;
+package org.mdnote.apiMonitor.util;
 
 import java.util.zip.CRC32;
 

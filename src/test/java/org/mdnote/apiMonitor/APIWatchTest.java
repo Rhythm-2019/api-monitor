@@ -1,14 +1,14 @@
-package org.mdnote.apiWatch;
+package org.mdnote.apiMonitor;
 
 import org.junit.Test;
-import org.mdnote.apiWatch.aggregator.Aggregator;
-import org.mdnote.apiWatch.aggregator.calculator.*;
-import org.mdnote.apiWatch.collecter.DefaultMetricCollector;
-import org.mdnote.apiWatch.collecter.IMetricCollector;
-import org.mdnote.apiWatch.report.ConsoleReport;
-import org.mdnote.apiWatch.report.Report;
-import org.mdnote.apiWatch.storage.IMetricStorage;
-import org.mdnote.apiWatch.storage.RedisMetricStorage;
+import org.mdnote.apiMonitor.aggregator.Aggregator;
+import org.mdnote.apiMonitor.aggregator.calculator.*;
+import org.mdnote.apiMonitor.collecter.DefaultMetricCollector;
+import org.mdnote.apiMonitor.collecter.IMetricCollector;
+import org.mdnote.apiMonitor.core.ConsoleReport;
+import org.mdnote.apiMonitor.core.ScheduleReporter;
+import org.mdnote.apiMonitor.storage.IMetricStorage;
+import org.mdnote.apiMonitor.storage.RedisMetricStorage;
 
 public class APIWatchTest {
 
@@ -37,7 +37,7 @@ public class APIWatchTest {
         aggregator.addCalculator(new P999CalculatorImpl());
         aggregator.addCalculator(new TpsCalculatorImpl());
 
-        Report consoleReport = new ConsoleReport(metricStorage, aggregator);
+        ScheduleReporter consoleReport = new ConsoleReport(metricStorage, aggregator);
 
         consoleReport.start(60, 10);
     }

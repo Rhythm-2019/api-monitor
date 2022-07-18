@@ -1,4 +1,4 @@
-package org.mdnote.apiWatch;
+package org.mdnote.apiMonitor;
 
 import lombok.Data;
 

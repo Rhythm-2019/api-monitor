@@ -1,9 +1,9 @@
-package org.mdnote.apiWatch.collecter;
+package org.mdnote.apiMonitor.collecter;
 
 import lombok.extern.slf4j.Slf4j;
-import org.mdnote.apiWatch.Metric;
-import org.mdnote.apiWatch.storage.IMetricStorage;
-import org.mdnote.apiWatch.storage.MetricStorageException;
+import org.mdnote.apiMonitor.Metric;
+import org.mdnote.apiMonitor.storage.IMetricStorage;
+import org.mdnote.apiMonitor.storage.MetricStorageException;
 
 @Slf4j
 public class DefaultMetricCollector implements IMetricCollector {
@@ -20,6 +20,11 @@ public class DefaultMetricCollector implements IMetricCollector {
         } catch (MetricStorageException e) {
             log.error("mark metric failed, error is {}", e.getMessage());
         }
+    }
+
+    @Override
+    public void markAsync(Metric metric) {
+
     }
 
 }

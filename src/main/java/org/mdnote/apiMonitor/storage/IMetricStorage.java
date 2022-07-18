@@ -1,9 +1,9 @@
-package org.mdnote.apiWatch.storage;
+package org.mdnote.apiMonitor.storage;
 
 import java.util.List;
 import java.util.Map;
 
-import org.mdnote.apiWatch.Metric;
+import org.mdnote.apiMonitor.Metric;
 
 public interface IMetricStorage {
     

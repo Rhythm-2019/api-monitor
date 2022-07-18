@@ -1,6 +1,4 @@
-package org.mdnote.apiWatch.storage;
-
-import java.util.concurrent.Executors;
+package org.mdnote.apiMonitor.storage;
 
 public class MetricStorageException extends Exception {
 
