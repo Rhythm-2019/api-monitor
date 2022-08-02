@@ -79,5 +79,4 @@ public class Aggregator {
 
         return result;
     }
-    
 }

@@ -15,7 +15,7 @@ public class APIWatchTest {
     @Test
     public void test() throws InterruptedException {
         IMetricStorage metricStorage = new RedisMetricStorage("192.168.80.154", 6379, "");
-        IMetricCollector metricCollector = new DefaultMetricCollector(metricStorage);
+        IMetricCollector metricCollector = new DefaultMetricCollector(metricStorage, 10);
 
         for (int i = 0; i < 10; i++) {
             Metric metric = new Metric();

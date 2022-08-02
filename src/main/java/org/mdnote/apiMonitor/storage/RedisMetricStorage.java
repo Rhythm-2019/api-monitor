@@ -45,9 +45,10 @@ public class RedisMetricStorage implements IMetricStorage {
         }
     }
 
+    @Override
     public Map<String, List<Metric>> getMetric(long startTimeInMillis, long endTimeInMillis) {
 
-        Optional<Jedis> optional = this.getConnect();
+        Optional<Jedis> optional = Optional.empty();
         if (optional.isPresent()) {
             Map<String, List<Metric>> result = new HashMap<>();
 
