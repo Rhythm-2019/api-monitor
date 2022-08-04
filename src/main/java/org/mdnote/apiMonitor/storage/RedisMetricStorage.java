@@ -3,9 +3,8 @@ package org.mdnote.apiMonitor.storage;
 import java.util.*;
 
 import com.redislabs.redistimeseries.RedisTimeSeries;
-import org.mdnote.apiMonitor.Metric;
-import org.mdnote.apiMonitor.util.ByteUtil;
-import redis.clients.jedis.Jedis;
+import org.mdnote.apiMonitor.metric.ClientMetric;
+import org.mdnote.apiMonitor.metric.ServiceMetric;
 
 /**
  * @author Rhythm-2019
@@ -13,8 +12,11 @@ import redis.clients.jedis.Jedis;
  * 时序模型  METRIC [resp_time: 000; tag apuBane] ts
  * redis 可以使用 Hash（支持 ts 查询指标） 和 ZSet（支持范围查询，store 为时间错） 时限时序数据存储，使用 EXEC、MULRI 保证原子性
  * RedisTimeSeries 支持范围聚合，可以减少数据传输
+ *
  */
 public class RedisMetricStorage implements IMetricStorage {
+
+    // TODO 补充 Redis 实现
 
     private static final int RETRY_CONNECT_TIME = 3;
 
@@ -38,42 +40,31 @@ public class RedisMetricStorage implements IMetricStorage {
     public void saveMetric(Metric metric) throws MetricStorageException {
         // use hash， key is metric-name, field is crc32(apiName), value is metric-value
         try {
-            Map<String, String> labels = Collections.singletonMap("apiName", metric.getApiName());
+            Map<String, String> labels = Collections.singletonMap("apiName", metric.getUri());
             this.redisTimeSeries.create("", 60*10 /*10min*/, labels);
         } catch (Exception e) {
             throw new MetricStorageException("save metric failed", e);
         }
     }
 
+
     @Override
-    public Map<String, List<Metric>> getMetric(long startTimeInMillis, long endTimeInMillis) {
+    public void saveMetric(ClientMetric metric) throws MetricStorageException {
 
-        Optional<Jedis> optional = Optional.empty();
-        if (optional.isPresent()) {
-            Map<String, List<Metric>> result = new HashMap<>();
+    }
 
-            Map<String, String> respTimeApiNameMap = optional.get().hgetAll(RESP_TIME_KEY);
-            Map<String, String> curTimeApiNameMap = optional.get().hgetAll(CUR_TIME_KEY);
+    @Override
+    public void saveMetric(ServiceMetric metric) throws MetricStorageException {
 
-            List<Metric> metricList = new ArrayList<>();
-            curTimeApiNameMap.forEach((apiName, curTimeStr) -> {
-                String respTimeStr = respTimeApiNameMap.get(apiName);
+    }
 
-
-                Metric metric = new Metric();
-                metric.setApiName(apiName);
-                metric.setCurrentTimestamp(ByteUtil.toLong(curTimeStr.getBytes()));
-                metric.setResponseTime(ByteUtil.toLong(respTimeStr.getBytes()));
-
-                metricList.add(metric);
-            });
-
-//            result.put()
-        }
+    @Override
+    public Map<String, ClientMetric> getClientMetric(String serverName, String uri, long startTimeInMillis, long endTimeInMillis) throws MetricStorageException {
         return null;
     }
 
-    public List<Metric> getMetric(String apiName, long startTimeInMillis, long endTimeInMillis) {
+    @Override
+    public Map<String, ServiceMetric> getServerMetric(String serverName, String uri, long startTimeInMillis, long endTimeInMillis) throws MetricStorageException {
         return null;
     }
 }

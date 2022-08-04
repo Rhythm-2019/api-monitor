@@ -3,7 +3,6 @@ package org.mdnote.apiMonitor.aggregator;
 import java.util.*;
 
 import org.mdnote.apiMonitor.AggregateResult;
-import org.mdnote.apiMonitor.Metric;
 import org.mdnote.apiMonitor.aggregator.calculator.ICalculator;
 
 /**

@@ -19,7 +19,7 @@ public class APIWatchTest {
 
         for (int i = 0; i < 10; i++) {
             Metric metric = new Metric();
-            metric.setApiName("test" + i);
+            metric.setUri("test" + i);
             long start = System.currentTimeMillis();
             metric.setCurrentTimestamp(start);
 

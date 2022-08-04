@@ -2,7 +2,6 @@ package org.mdnote.apiMonitor.core;
 
 import lombok.extern.slf4j.Slf4j;
 import org.mdnote.apiMonitor.AggregateResult;
-import org.mdnote.apiMonitor.Metric;
 import org.mdnote.apiMonitor.aggregator.Aggregator;
 import org.mdnote.apiMonitor.storage.IMetricStorage;
 import org.mdnote.apiMonitor.storage.MetricStorageException;

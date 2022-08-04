@@ -1,7 +1,6 @@
 package org.mdnote.apiMonitor.aggregator.calculator;
 
 import org.mdnote.apiMonitor.AggregateResult;
-import org.mdnote.apiMonitor.Metric;
 
 import java.util.List;
 import java.util.Optional;

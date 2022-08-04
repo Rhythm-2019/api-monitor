@@ -1,7 +1,5 @@
 package org.mdnote.apiMonitor.collecter;
 
-import org.mdnote.apiMonitor.Metric;
-
 /**
  * @author Rhythm-2019
  *

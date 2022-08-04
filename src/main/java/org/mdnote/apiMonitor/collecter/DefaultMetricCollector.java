@@ -4,7 +4,6 @@ import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import lombok.extern.slf4j.Slf4j;
-import org.mdnote.apiMonitor.Metric;
 import org.mdnote.apiMonitor.storage.IMetricStorage;
 import org.mdnote.apiMonitor.storage.MetricStorageException;
 

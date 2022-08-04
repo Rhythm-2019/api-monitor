@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.mdnote.apiMonitor.AggregateResult;
-import org.mdnote.apiMonitor.Metric;
 
 public class MaxRespCalculator implements ICalculator {
 
