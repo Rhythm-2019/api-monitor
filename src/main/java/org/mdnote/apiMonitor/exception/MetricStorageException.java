@@ -1,4 +1,4 @@
-package org.mdnote.apiMonitor.storage;
+package org.mdnote.apiMonitor.exception;
 
 public class MetricStorageException extends Exception {
 

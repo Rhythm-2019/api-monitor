@@ -1,13 +1,12 @@
 package org.mdnote.apiMonitor.collecter;
 
-import com.google.common.eventbus.AsyncEventBus;
-import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
 import lombok.extern.slf4j.Slf4j;
-import org.mdnote.apiMonitor.storage.IMetricStorage;
-import org.mdnote.apiMonitor.storage.MetricStorageException;
+import org.mdnote.apiMonitor.metric.ClientMetric;
+import org.mdnote.apiMonitor.metric.ServerMetric;
+import org.mdnote.apiMonitor.storage.MetricStorage;
+import org.mdnote.apiMonitor.exception.MetricStorageException;
 
-import java.util.concurrent.Executors;
+import java.util.List;
 
 
 /**
@@ -16,52 +15,40 @@ import java.util.concurrent.Executors;
  * IMetricCollector 的默认实现，支持同步记录和异步记录
  */
 @Slf4j
-public class DefaultMetricCollector implements IMetricCollector {
+public class DefaultMetricCollector implements SyncMetricCollector {
 
     /**
      * 指标存储接口
      */
-    private IMetricStorage metricStorage;
-
-    /**
-     * guava 异步是俺
-     */
-    private EventBus eventBus;
+    private List<MetricStorage> metricStorageList;
 
     /**
      * 构造方法
-     * @param metricStorage 指标存储
-     * @param nThreads 异步线程数
+     * @param metricStorageList 指标存储
      */
-    public DefaultMetricCollector(IMetricStorage metricStorage, int nThreads) {
-        this.metricStorage = metricStorage;
-        this.eventBus = new AsyncEventBus(Executors.newFixedThreadPool(nThreads));
-        this.eventBus.register(new AsyncMarkMetric());
+    public DefaultMetricCollector(List<MetricStorage> metricStorageList) {
+        this.metricStorageList = metricStorageList;
     }
 
     @Override
-    public void mark(Metric metric) {
-        try {
-            this.metricStorage.saveMetric(metric);
-        } catch (MetricStorageException e) {
-            log.error("mark metric failed, error is {}", e.getMessage());
-        }
+    public void mark(ClientMetric metric) {
+        this.metricStorageList.forEach(metricStorage -> {
+            try {
+                metricStorage.saveMetric(metric);
+            } catch (MetricStorageException e) {
+                log.error("mark client metric failed, error is {}", e.getMessage());
+            }
+        });
     }
 
     @Override
-    public void markAsync(Metric metric) {
-        this.eventBus.post(metric);
-    }
-
-    private class AsyncMarkMetric {
-
-        @Subscribe
-        public void mark(Metric metric) {
+    public void mark(ServerMetric metric) {
+        this.metricStorageList.forEach(metricStorage -> {
             try {
                 metricStorage.saveMetric(metric);
             } catch (MetricStorageException e) {
                 log.error("mark metric failed, error is {}", e.getMessage());
             }
-        }
+        });
     }
 }

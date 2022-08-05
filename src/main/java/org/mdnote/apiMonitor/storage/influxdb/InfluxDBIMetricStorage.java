@@ -1,4 +1,4 @@
-package org.mdnote.apiMonitor.storage;
+package org.mdnote.apiMonitor.storage.influxdb;
 
 import lombok.extern.slf4j.Slf4j;
 import org.influxdb.InfluxDB;
@@ -6,13 +6,15 @@ import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
-import org.jetbrains.annotations.NotNull;
+import org.mdnote.apiMonitor.exception.MetricStorageException;
 import org.mdnote.apiMonitor.metric.ClientMetric;
 import org.mdnote.apiMonitor.metric.Metric;
 import org.mdnote.apiMonitor.metric.MetricAnnotationUtil;
-import org.mdnote.apiMonitor.metric.ServiceMetric;
+import org.mdnote.apiMonitor.metric.ServerMetric;
+import org.mdnote.apiMonitor.storage.MetricStorage;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,25 +29,51 @@ import java.util.concurrent.TimeUnit;
  *           field 相当于字段，比如 RT、ServerSpendTime 等
  */
 @Slf4j
-public class InfluxDBIMetricStorage implements IMetricStorage {
+public class InfluxDBIMetricStorage implements MetricStorage {
 
     private InfluxDB influxDB;
 
-    public InfluxDBIMetricStorage(@NotNull String serverURL, @NotNull String username, String password, @NotNull String database) {
+    public InfluxDBIMetricStorage(String serverURL, String username, String password, String database) {
         this.influxDB = InfluxDBFactory.connect(serverURL, username, password);
         this.influxDB.query(new Query("CREATE DATABASE IF NOT EXISTS " + database));
         this.influxDB.setDatabase(database);
     }
 
-    // TODO 异常处理写好一点
     @Override
-    public void saveMetric(@NotNull ClientMetric metric) throws MetricStorageException {
-        this.save(String.format("%s:%s:%s", metric.getServerName(), metric.getUri(), "client"), metric);
+    public void saveMetric(ClientMetric metric) throws MetricStorageException {
+        try {
+            this.save(String.format("%s:%s:%s", metric.getServerName(), metric.getUri(), "client"), metric);
+        } catch (Exception e) {
+            throw new MetricStorageException("metric storage exception:", e);
+        }
     }
 
     @Override
-    public void saveMetric(@NotNull ServiceMetric metric) throws MetricStorageException {
-        this.save(String.format("%s:%s:%s", metric.getServerName(), metric.getUri(), "server"), metric);
+    public void saveMetric(ServerMetric metric) throws MetricStorageException {
+        try {
+            this.save(String.format("%s:%s:%s", metric.getServerName(), metric.getUri(), "server"), metric);
+        } catch (Exception e) {
+            throw new MetricStorageException("metric storage exception:", e);
+        }
+    }
+    @Override
+    public List<ClientMetric> getClientMetric(String serverName, String uri, long startTimeInMillis, long endTimeInMillis) throws MetricStorageException {
+        try {
+            return this.query(String.format("SELECT * FROM %s:%s:client WHERE time >= %d AND time <= %d",
+                    serverName, uri, startTimeInMillis, endTimeInMillis), ClientMetric.class);
+        } catch (Exception e) {
+            throw new MetricStorageException("metric storage exception:", e);
+        }
+    }
+
+    @Override
+    public List<ServerMetric> getServerMetric(String serverName, String uri, long startTimeInMillis, long endTimeInMillis) throws MetricStorageException {
+        try {
+            return this.query(String.format("SELECT * FROM %s:%s:server WHERE time >= %d AND time <= %d",
+                    serverName, uri, startTimeInMillis, endTimeInMillis), ServerMetric.class);
+        } catch (Exception e) {
+            throw new MetricStorageException("metric storage exception:", e);
+        }
     }
 
     private void save(String measurement, Metric metric) {
@@ -63,7 +91,7 @@ public class InfluxDBIMetricStorage implements IMetricStorage {
                 .fields(fields)
                 .build());
     }
-    private <T extends Metric> Map<String, T> query(String influxQL, Class<T> targetClz) throws MetricStorageException {
+    private <T extends Metric> List<T> query(String influxQL, Class<T> targetClz) throws MetricStorageException {
         QueryResult queryResult = this.influxDB.query(new Query(influxQL));
 
         if (queryResult.hasError()) {
@@ -73,7 +101,7 @@ public class InfluxDBIMetricStorage implements IMetricStorage {
         List<String> columns = series.getColumns();
         List<List<Object>> table = series.getValues();
 
-        HashMap<String, T> result = new HashMap<>();
+        List<T> result = new ArrayList<>();
         Map<String, Field> fieldMap = MetricAnnotationUtil.getFieldMap(targetClz);
 
         for (List<Object> row : table) {
@@ -93,7 +121,7 @@ public class InfluxDBIMetricStorage implements IMetricStorage {
                             fieldMap.get(columnName).set(metric, row);
                         }
                     }
-                    result.put(metric.getUri(), metric);
+                    result.add(metric);
                 } catch (InstantiationException | IllegalAccessException | NoSuchFieldException e) {
                     log.error("reflect error!", e);
                 }
@@ -102,17 +130,4 @@ public class InfluxDBIMetricStorage implements IMetricStorage {
         return result;
 
     }
-    @Override
-    public Map<String, ClientMetric> getClientMetric(String serverName, String uri, long startTimeInMillis, long endTimeInMillis) throws MetricStorageException {
-        return this.query(String.format("SELECT * FROM %s:%s:client WHERE time >= %d AND time <= %d",
-                serverName, uri, startTimeInMillis, endTimeInMillis), ClientMetric.class);
-    }
-
-    @Override
-    public Map<String, ServiceMetric> getServerMetric(String serverName, String uri, long startTimeInMillis, long endTimeInMillis) throws MetricStorageException {
-        return this.query(String.format("SELECT * FROM %s:%s:server WHERE time >= %d AND time <= %d",
-                serverName, uri, startTimeInMillis, endTimeInMillis), ServiceMetric.class);
-    }
-
-
 }

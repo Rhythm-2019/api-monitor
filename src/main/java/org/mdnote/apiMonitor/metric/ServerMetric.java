@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class ServiceMetric extends Metric {
+public class ServerMetric extends Metric {
 
     private String collector = "server";
 

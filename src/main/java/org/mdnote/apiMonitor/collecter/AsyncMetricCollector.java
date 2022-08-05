@@ -1,5 +1,8 @@
 package org.mdnote.apiMonitor.collecter;
 
+import org.mdnote.apiMonitor.metric.ClientMetric;
+import org.mdnote.apiMonitor.metric.ServerMetric;
+
 /**
  * @author Rhythm-2019
  *
@@ -9,16 +12,18 @@ package org.mdnote.apiMonitor.collecter;
  * 周期性 (@code ScheduleReport) 或立即性（@code ImmedicateReport）聚
  * 合上报
  */
-public interface IMetricCollector {
+public interface AsyncMetricCollector extends MetricCollector {
     /**
-     * 同步记录
+     * 同步记录客户端采集指标
      * @param metric 指标
      */
-    void mark(Metric metric);
+    void asyncMark(ClientMetric metric);
 
     /**
-     * 异步记录
+     * 同步记录服务器采集指标
      * @param metric 指标
      */
-    void markAsync(Metric metric);
+    void asyncMark(ServerMetric metric);
+
+
 }

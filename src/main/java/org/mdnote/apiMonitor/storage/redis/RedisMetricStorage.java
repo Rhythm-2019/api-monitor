@@ -1,10 +1,12 @@
-package org.mdnote.apiMonitor.storage;
+package org.mdnote.apiMonitor.storage.redis;
 
 import java.util.*;
 
 import com.redislabs.redistimeseries.RedisTimeSeries;
+import org.mdnote.apiMonitor.exception.MetricStorageException;
 import org.mdnote.apiMonitor.metric.ClientMetric;
-import org.mdnote.apiMonitor.metric.ServiceMetric;
+import org.mdnote.apiMonitor.metric.ServerMetric;
+import org.mdnote.apiMonitor.storage.MetricStorage;
 
 /**
  * @author Rhythm-2019
@@ -14,7 +16,7 @@ import org.mdnote.apiMonitor.metric.ServiceMetric;
  * RedisTimeSeries 支持范围聚合，可以减少数据传输
  *
  */
-public class RedisMetricStorage implements IMetricStorage {
+public class RedisMetricStorage implements MetricStorage {
 
     // TODO 补充 Redis 实现
 
@@ -37,16 +39,6 @@ public class RedisMetricStorage implements IMetricStorage {
         }
     }
 
-    public void saveMetric(Metric metric) throws MetricStorageException {
-        // use hash， key is metric-name, field is crc32(apiName), value is metric-value
-        try {
-            Map<String, String> labels = Collections.singletonMap("apiName", metric.getUri());
-            this.redisTimeSeries.create("", 60*10 /*10min*/, labels);
-        } catch (Exception e) {
-            throw new MetricStorageException("save metric failed", e);
-        }
-    }
-
 
     @Override
     public void saveMetric(ClientMetric metric) throws MetricStorageException {
@@ -54,7 +46,7 @@ public class RedisMetricStorage implements IMetricStorage {
     }
 
     @Override
-    public void saveMetric(ServiceMetric metric) throws MetricStorageException {
+    public void saveMetric(ServerMetric metric) throws MetricStorageException {
 
     }
 
@@ -64,7 +56,7 @@ public class RedisMetricStorage implements IMetricStorage {
     }
 
     @Override
-    public Map<String, ServiceMetric> getServerMetric(String serverName, String uri, long startTimeInMillis, long endTimeInMillis) throws MetricStorageException {
+    public Map<String, ServerMetric> getServerMetric(String serverName, String uri, long startTimeInMillis, long endTimeInMillis) throws MetricStorageException {
         return null;
     }
 }
