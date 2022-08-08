@@ -11,7 +11,8 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * @author Rhythm-2019
@@ -22,21 +23,21 @@ import java.util.concurrent.locks.ReentrantLock;
 public class LocalMetricHolder<T extends Metric> {
 
     private HashMap<String, SkipListMap<Long, T>> holder;
-    private ReentrantLock lock;
+    private ReadWriteLock lock;
     private ScheduledExecutorService clearThread;
 
     public LocalMetricHolder(int clearDelay, TimeUnit timeUnit) {
         this.holder = new HashMap<>();
+        this.lock = new ReentrantReadWriteLock();
 
         // schedule clear
         this.clearThread = Executors.newSingleThreadScheduledExecutor();
-        this.lock = new ReentrantLock();
         clearThread.schedule(() -> {
             log.info("begin clear memory metric");
             Stopwatch stopwatch = Stopwatch.createStarted();
 
             try {
-                this.lock.lock();
+                this.lock.writeLock().lock();
                 long clearBeforeTime = System.currentTimeMillis() - 30 * 60 * 100;
                 this.holder.forEach((key, metricMap) -> {
                     Set<Long> series = metricMap.keySet();
@@ -47,7 +48,7 @@ public class LocalMetricHolder<T extends Metric> {
                     }
                 });
             } finally {
-                this.lock.unlock();
+                this.lock.writeLock().unlock();
             }
 
             stopwatch.stop();
@@ -59,24 +60,27 @@ public class LocalMetricHolder<T extends Metric> {
 
     public void put(T metric) {
         try {
-            this.lock.lock();
+            this.lock.writeLock().lock();
             String key = this.getKey(metric.getServerName(), metric.getUri());
             this.holder.putIfAbsent(key, new SkipListMap<>());
             this.holder.get(key).put(metric.getTimestamp(), metric);
         } finally {
-            this.lock.unlock();
+            this.lock.writeLock().unlock();
         }
     }
 
     public List<T> list(String serverName, String uri, long startTimeInMillis, long endTimeInMillis) {
 
         try {
-            this.lock.lock();
-            return new ArrayList<>(this.holder.get(getKey(serverName, uri)).subMap(startTimeInMillis, endTimeInMillis).values());
+            this.lock.readLock().lock();
+            SkipListMap<Long, T> metricSkipList = this.holder.get(getKey(serverName, uri));
+            if (metricSkipList == null) {
+                return new ArrayList<>();
+            }
+            return new ArrayList<>(metricSkipList.subMap(startTimeInMillis, endTimeInMillis).values());
         } finally {
-            this.lock.unlock();
+            this.lock.readLock().unlock();
         }
-
     }
 
     private String getKey(String servername, String uri) {

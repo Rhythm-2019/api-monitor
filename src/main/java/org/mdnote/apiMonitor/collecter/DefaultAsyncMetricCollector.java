@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutorService;
 
 /**
  * @author Rhythm-2019
- *
+ * <p>
  * IMetricCollector 的默认实现，支持同步记录和异步记录
  */
 @Slf4j
@@ -30,8 +30,9 @@ public class DefaultAsyncMetricCollector implements AsyncMetricCollector {
 
     /**
      * 构造方法
+     *
      * @param metricStorageList 指标存储
-     * @param executorService 线程池
+     * @param executorService   线程池
      */
     public DefaultAsyncMetricCollector(List<MetricStorage> metricStorageList, ExecutorService executorService) {
         this.metricStorageList = metricStorageList;

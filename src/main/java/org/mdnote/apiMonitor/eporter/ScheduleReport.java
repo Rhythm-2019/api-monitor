@@ -1,8 +1,8 @@
 package org.mdnote.apiMonitor.eporter;
 
 import org.mdnote.apiMonitor.aggregator.Aggregator;
+import org.mdnote.apiMonitor.eporter.terminal.Terminal;
 import org.mdnote.apiMonitor.storage.MetricStorage;
-import org.mdnote.apiMonitor.viewer.Terminal;
 
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -14,19 +14,19 @@ import java.util.concurrent.TimeUnit;
  * @date 2022/8/5
  * @description
  */
-public class ScheduleReport extends Reporter {
+public class ScheduleReport {
 
     private final ScheduledExecutorService executor;
+    private ImmediateReporter immediateReporter;
 
     public ScheduleReport(String serverName, List<String> uris, MetricStorage metricStorage, Aggregator aggregator, Terminal terminal) {
-        super(serverName, uris, metricStorage, aggregator, terminal);
+        immediateReporter = new ImmediateReporter(serverName, uris, metricStorage, aggregator, terminal);
         this.executor = Executors.newSingleThreadScheduledExecutor();
     }
 
-    @Override
-    public void report(int durationMillis) {
+    public void start(int periodMillis, int durationMillis) {
         this.executor.scheduleAtFixedRate(() -> {
-            super.report(durationMillis);
-        }, 0, durationMillis, TimeUnit.MILLISECONDS);
+            this.immediateReporter.report(durationMillis);
+        }, periodMillis, periodMillis, TimeUnit.MILLISECONDS);
     }
 }

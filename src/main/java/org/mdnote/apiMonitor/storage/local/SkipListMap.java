@@ -21,17 +21,7 @@
  */
 package org.mdnote.apiMonitor.storage.local;
 
-import java.util.AbstractCollection;
-import java.util.AbstractMap;
-import java.util.AbstractSet;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Random;
-import java.util.Set;
-import java.util.SortedMap;
+import java.util.*;
 
 /**
  * An implementation of {@link java.util.Map} based on skip lists, a data structure first described in 1989
@@ -146,10 +136,8 @@ public class SkipListMap<K, V> extends AbstractMap<K, V> implements SortedMap<K,
      * key.
      *
      * @param key key whose presence in this map is to be tested
-     *
      * @return <tt>true</tt> if this map includes a mapping for the specified
      * key
-     *
      * @throws ClassCastException   if the key is of an inappropriate type for
      *                              this map
      * @throws NullPointerException if the specified key is null and this map
@@ -166,10 +154,8 @@ public class SkipListMap<K, V> extends AbstractMap<K, V> implements SortedMap<K,
      * or {@code null} if this skip list map includes no mapping for the key.
      *
      * @param key the key whose associated value is to be returned
-     *
      * @return the value to which the specified key is mapped, or
      * {@code null} if this map includes no mapping for the key
-     *
      * @throws ClassCastException   if the key is of an inappropriate type for
      *                              this map
      * @throws NullPointerException if the specified key is null and this map
@@ -189,12 +175,10 @@ public class SkipListMap<K, V> extends AbstractMap<K, V> implements SortedMap<K,
      *
      * @param key   key with which the specified value is to be associated
      * @param value value to be associated with the specified key
-     *
      * @return the previous value associated with {@code key}, or
      * {@code null} if there was no mapping for {@code key}.
      * (A {@code null} return can also indicate that the map
      * previously associated {@code null} with {@code key}.)
-     *
      * @throws ClassCastException   if the specified key cannot be compared
      *                              with the keys currently in the map
      * @throws NullPointerException if the specified key is null
@@ -243,10 +227,8 @@ public class SkipListMap<K, V> extends AbstractMap<K, V> implements SortedMap<K,
      * or <tt>null</tt> if the map contained no mapping for the key.
      *
      * @param key key whose mapping is to be removed from the map
-     *
      * @return the previous value associated with <tt>key</tt>, or
      * <tt>null</tt> if there was no mapping for <tt>key</tt>.
-     *
      * @throws ClassCastException   if the key is of an inappropriate type for
      *                              this map
      * @throws NullPointerException if the specified key is null and this
@@ -337,10 +319,8 @@ public class SkipListMap<K, V> extends AbstractMap<K, V> implements SortedMap<K,
      *
      * @param fromKey low endpoint (inclusive) of the keys in the returned map
      * @param toKey   high endpoint (exclusive) of the keys in the returned map
-     *
      * @return a view of the portion of this map whose keys range from
      * {@code fromKey}, inclusive, to {@code toKey}, exclusive
-     *
      * @throws IllegalArgumentException if {@code fromKey} is greater than
      *                                  {@code toKey}; or if this map itself has a restricted
      *                                  range, and {@code fromKey} or {@code toKey} lies
@@ -357,10 +337,8 @@ public class SkipListMap<K, V> extends AbstractMap<K, V> implements SortedMap<K,
      * strictly less than {@code toKey}.
      *
      * @param toKey high endpoint (exclusive) of the keys in the returned map
-     *
      * @return a view of the portion of this map whose keys are strictly
      * less than {@code toKey}
-     *
      * @throws IllegalArgumentException if this map itself has a
      *                                  restricted range, and {@code toKey} lies outside the
      *                                  bounds of the range
@@ -375,10 +353,8 @@ public class SkipListMap<K, V> extends AbstractMap<K, V> implements SortedMap<K,
      * greater than or equal to {@code fromKey}.
      *
      * @param fromKey low endpoint (inclusive) of the keys in the returned map
-     *
      * @return a view of the portion of this map whose keys are greater
      * than or equal to {@code fromKey}
-     *
      * @throws IllegalArgumentException if this map itself has a
      *                                  restricted range, and {@code fromKey} lies outside the
      *                                  bounds of the range
@@ -392,7 +368,6 @@ public class SkipListMap<K, V> extends AbstractMap<K, V> implements SortedMap<K,
      * Returns the first (lowest) key currently in this skip list map.
      *
      * @return the first (lowest) key currently in this skip list map
-     *
      * @throws NoSuchElementException if this map is empty
      */
     @Override
@@ -408,7 +383,6 @@ public class SkipListMap<K, V> extends AbstractMap<K, V> implements SortedMap<K,
      * Returns the last (highest) key currently in this skip list map.
      *
      * @return the last (highest) key currently in this skip list map
-     *
      * @throws NoSuchElementException if this map is empty
      */
     @Override
@@ -492,7 +466,6 @@ public class SkipListMap<K, V> extends AbstractMap<K, V> implements SortedMap<K,
      * @param key      the specific key used to find the closest node
      * @param relation the specific relation
      * @param update   the update array which is used by {@link SkipListMap#put(Object, Object)}
-     *
      * @return the node whose key is closest to the given {@code key} or null if there is not.
      */
     private Node<K, V> findClosestNode(K key, Relation relation, Node<K, V>[] update) {
@@ -543,42 +516,24 @@ public class SkipListMap<K, V> extends AbstractMap<K, V> implements SortedMap<K,
         return new ValueIterator(entryIterator());
     }
 
-    private class EntryIterator implements Iterator<Entry<K, V>> {
-        Node<K, V> nextNode;
-        Entry<K, V> prevEntry;
+    /**
+     * Relation enum for searching nodes.
+     */
+    private enum Relation {
+        EQ(1),
+        GT(2),
+        GE(EQ.value | GT.value),
+        LT(4),
+        LE(EQ.value | LT.value);
 
-        EntryIterator(Node<K, V> first) {
-            this.nextNode = first;
+        private final int value;
+
+        Relation(int value) {
+            this.value = value;
         }
 
-        private Entry<K, V> prevEntry() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            prevEntry = this.nextNode;
-            nextNode = this.nextNode.prev[0];
-
-            return prevEntry;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return nextNode != null && nextNode != tail;
-        }
-
-        @Override
-        public Entry<K, V> next() {
-            return nextEntry();
-        }
-
-        private Entry<K, V> nextEntry() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            prevEntry = this.nextNode;
-            nextNode = this.nextNode.next[0];
-
-            return prevEntry;
+        boolean includes(Relation other) {
+            return (value & other.value) != 0;
         }
     }
 
@@ -588,9 +543,9 @@ public class SkipListMap<K, V> extends AbstractMap<K, V> implements SortedMap<K,
     @SuppressWarnings("unchecked")
     private static final class Node<K, V> implements Entry<K, V> {
         final K key;
-        V value;
         final Node<K, V>[] next;
         final Node<K, V>[] prev;
+        V value;
 
         Node(K key, V value, int level) {
             this.key = key;
@@ -614,99 +569,6 @@ public class SkipListMap<K, V> extends AbstractMap<K, V> implements SortedMap<K,
             V oldValue = this.value;
             this.value = value;
             return oldValue;
-        }
-    }
-
-    /**
-     * Relation enum for searching nodes.
-     */
-    private enum Relation {
-        EQ(1),
-        GT(2),
-        GE(EQ.value | GT.value),
-        LT(4),
-        LE(EQ.value | LT.value);
-
-        private final int value;
-
-        Relation(int value) {
-            this.value = value;
-        }
-
-        boolean includes(Relation other) {
-            return (value & other.value) != 0;
-        }
-    }
-
-    private class KeyIterator implements Iterator<K> {
-        private final EntryIterator entryIterator;
-
-        KeyIterator(EntryIterator entryIterator) {
-            this.entryIterator = entryIterator;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return entryIterator.hasNext();
-        }
-
-        @Override
-        public K next() {
-            return entryIterator.next().getKey();
-        }
-    }
-
-    private class ValueIterator implements Iterator<V> {
-        private final EntryIterator entryIterator;
-
-        ValueIterator(EntryIterator entryIterator) {
-            this.entryIterator = entryIterator;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return entryIterator.hasNext();
-        }
-
-        @Override
-        public V next() {
-            return entryIterator.next().getValue();
-        }
-    }
-
-    private class EntrySet extends AbstractSet<Entry<K, V>> {
-        @Override
-        public Iterator<Entry<K, V>> iterator() {
-            return entryIterator();
-        }
-
-        @Override
-        public int size() {
-            return SkipListMap.this.size();
-        }
-    }
-
-    private class KeySet extends AbstractSet<K> {
-        @Override
-        public Iterator<K> iterator() {
-            return keyIterator();
-        }
-
-        @Override
-        public int size() {
-            return size;
-        }
-    }
-
-    private class Values extends AbstractCollection<V> {
-        @Override
-        public Iterator<V> iterator() {
-            return valueIterator();
-        }
-
-        @Override
-        public int size() {
-            return size;
         }
     }
 
@@ -835,11 +697,9 @@ public class SkipListMap<K, V> extends AbstractMap<K, V> implements SortedMap<K,
             }
 
             private class EntryIterator implements Iterator<Entry<K, V>> {
-                Node<K, V> nextNode;
-
                 // exclusive
                 final Node<K, V> bound;
-
+                Node<K, V> nextNode;
                 Entry<K, V> prevEntry;
 
                 EntryIterator(Node<K, V> fromNode, Node<K, V> bound) {
@@ -863,6 +723,117 @@ public class SkipListMap<K, V> extends AbstractMap<K, V> implements SortedMap<K,
                 }
             }
 
+        }
+    }
+
+    private class EntryIterator implements Iterator<Entry<K, V>> {
+        Node<K, V> nextNode;
+        Entry<K, V> prevEntry;
+
+        EntryIterator(Node<K, V> first) {
+            this.nextNode = first;
+        }
+
+        private Entry<K, V> prevEntry() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            prevEntry = this.nextNode;
+            nextNode = this.nextNode.prev[0];
+
+            return prevEntry;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return nextNode != null && nextNode != tail;
+        }
+
+        @Override
+        public Entry<K, V> next() {
+            return nextEntry();
+        }
+
+        private Entry<K, V> nextEntry() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            prevEntry = this.nextNode;
+            nextNode = this.nextNode.next[0];
+
+            return prevEntry;
+        }
+    }
+
+    private class KeyIterator implements Iterator<K> {
+        private final EntryIterator entryIterator;
+
+        KeyIterator(EntryIterator entryIterator) {
+            this.entryIterator = entryIterator;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return entryIterator.hasNext();
+        }
+
+        @Override
+        public K next() {
+            return entryIterator.next().getKey();
+        }
+    }
+
+    private class ValueIterator implements Iterator<V> {
+        private final EntryIterator entryIterator;
+
+        ValueIterator(EntryIterator entryIterator) {
+            this.entryIterator = entryIterator;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return entryIterator.hasNext();
+        }
+
+        @Override
+        public V next() {
+            return entryIterator.next().getValue();
+        }
+    }
+
+    private class EntrySet extends AbstractSet<Entry<K, V>> {
+        @Override
+        public Iterator<Entry<K, V>> iterator() {
+            return entryIterator();
+        }
+
+        @Override
+        public int size() {
+            return SkipListMap.this.size();
+        }
+    }
+
+    private class KeySet extends AbstractSet<K> {
+        @Override
+        public Iterator<K> iterator() {
+            return keyIterator();
+        }
+
+        @Override
+        public int size() {
+            return size;
+        }
+    }
+
+    private class Values extends AbstractCollection<V> {
+        @Override
+        public Iterator<V> iterator() {
+            return valueIterator();
+        }
+
+        @Override
+        public int size() {
+            return size;
         }
     }
 

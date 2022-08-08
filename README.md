@@ -1,88 +1,91 @@
+#  API-Monitor
 
-##  需求背景
-
-我们希望设计开发一个小巧的框架，能够获取接口调用的各种统计信息，比如，响应时间的最大值（max）、最小值（min）、平均值（avg）、百分位值（percentile）、接口调用次数（count）、频率（tps） 等，并且支持将统计结果以各种显示格式（比如：JSON格式、网页格式、自定义显示格式等）输出到各种终端（Console命令行、HTTP网页、Email、日志文件、自定义输出终端等），以方便查看。
-
-##  需求分析与代码设计（核心）
-
-经过该需求总结需求开发流程：OOA -> OOD -> OOP
-1. 根据需求列表定义类
-2. 定义类的属性和方法
-3. 梳理类与类之间的交互关系
-4  定义入口
-
-###  事前：捋清楚需求
-
-了解需求：
-1. 需要对接口的相应时间进行打点采集
-2. 采集后需要存储到某个介质中
-3. 周期性/立即性对指标进行聚合分析
-4. 聚合分析后的结果进行格式化
-5. 将格式化后的结果输出到终端
-
-了解技术重点和难点：
-1. 应用层 API 监控相关参数、采集方式和计算公式：[ISSUE 1](https://github.com/Rhythm-2019/api-monitor/issues/1#issue-1325563810)
-2. 指标数据的存储选型：issue
-
-###  第一步：根据需求列表找到类的定义
-
-根据上面的需求列表，提取类定义（可以找名词）
-* 打点采集：Collector
-* 存储介质：Storage
-* 聚合工具：Aggregate
-* 输出终端：Terminal
-* 输出格式化：Formatter
-* 周期上报/立即上报：ScheduleReport、ImmediateReporter
-
-###  第二步：定义类的属性和方法
-
-根据上面的需求列表为类定义属性和方法（可以找动词）
-* Collector：
-    * 属性：（无明显需要定义的属性、延后到第三步再思考）
-    * 方法：collect、asynCollect
-* Storage：
-    * 属性：不同介质的属性，比如 Redis 中的账号密码等
-    * 方法：save、list、listRange
-* Aggregate：
-    * 属性：（无明显需要定义的属性、延后到第三步再思考）
-    * 方法：aggregate
-* Terminal：
-    * 属性：输出终端的相关属性，比如 URL 等
-    * 方法：output
-* Formatter：
-    * 属性：无
-    * 方法：format
-
-###  第三步：梳理类和类之间的关系
-
-* 用户直接与 Collector 打交道，Collector 需要依赖 Storage 存储指标数据 
-，Reporter 负责任务调度，统筹聚合统计工作。需要依赖 Storage 获取数据，Aggregate 聚合数据、Terminal 输出数据，
-* Terminal 构造时需要依赖 Format
-* Aggregate 不与 Storage 关联，Aggregate 只做聚合分析，夫负责拉取指标数据
+对于部署在生产环境的 Web 应用，接口的性能监控尤为重要，运维人员可以了解系统当前负载、开发人员可根据监控数据分析瓶颈、进行系统调优。市面上有很多优秀、易用的监控告警产品。如 Open-Falcon、夜莺等。
+但这些组件架构相对复杂，对于单体应用而言引入这些组件会增加系统复杂度、降低告警即时性，因此笔者希望编写一款具备拓展性、轻量级的 API 接口性能监控工具，无需外部依赖可以直接引用。
 
 
-###  第四步：编写入口程序
+##  调研工作 
+* 如何利用设计模式、设计原则编写出拓展性强、可测性强、易用易读的代码：[DESIGN.md](DESIGN.md)
+* 应该在哪里采集什么指标：[API 参数说明](https://github.com/Rhythm-2019/api-monitor/issues/1)
+* 如何存储指标数据：[时序数据库调研](https://github.com/Rhythm-2019/api-monitor/issues)
 
-Reporter 定时或者周期触发
+难点和挑战：
+1. 容易产生 OOM：
+2. 采集增加了响应时间：
 
+## Quick Start
 
-##  Usage
-
-
-
-
-##  环境搭建
-
-Redis 时序数据库搭建（RedisTimeSeries）
-
+引入当前项目依赖
 ```bash
-$ vagrant init centos/7
-$ vagrant up
-
-# install  redis
-$ sdocker run -p 6379:6379 -it --rm redislabs/redistimeseries
-
-
-https://cloud.tencent.com/developer/news/491464
+$ git clone 
+$ mvn install 
 ```
 
+####  采集
+
+构造 MetricCollector
+
+```java
+// 本地内存作为存储介质
+LocalStorage localStorage = new LocalStorage();
+// InfluxDB 作为存储介质
+InfluxDBIMetricStorage influxDBIMetricStorage = new InfluxDBIMetricStorage(...);
+// 采集器会将指标分发到介质中
+DefaultMetricCollector collector = new DefaultMetricCollector(Arrays.asList(localStorage));
+```
+
+* 在客户端埋点，服务端接收客户端采集的指标（如响应时间）
+
+```java
+public class ClientMtericController {
+    @Autowired
+    private MetricCollector metricCollector;
+    
+    @PostMapping("/client/metric")
+    public R hello(@RequestBody ClientMetric metric) {
+        metricCollector.mark(metric);
+        return R.ok();
+    }
+}
+
+```
+
+* 在服务端买点（可以使用 AOP 织入），服务端保存服务端产生的指标（花费时间，TTP 状态码）
+
+```java
+@RestContrller
+public class DemoController {
+    @Autowired
+    private MetricCollector metricCollector;
+    
+    @GetMapping("hello")
+    public R hello() {
+        // ...
+        ServerMetric metric = new ServerMetric();
+        metric.setSpendTime(...);
+        metric.setServerName(...);
+        metric.setUri(...);
+        metricCollector.mark(metric);
+        
+        return R.ok();
+    }
+}
+```
+
+####  上报
+
+在 Web 应用启动时启动聚合上报
+```java
+// 参数分别为服务名称、需要监控的 URI 列表、对于哪一个存储介质进行数据聚合、聚合方式、输出终端
+ScheduleReport scheduleReport = new ScheduleReport("server-test", Arrays.asList("111", "222"), localStorage, AggregatorFactory.clientAggregator(), new ConsoleTerminal(new JsonFormatter()));
+// 参数分别为为汇报间隔，统计时间间隔
+schduleReporter.start(3_000, 10_000);
+```
+
+
+###  拓展点
+
+1. 指标项可拓展：指标分为客户端指标和服务器指标，可以通过继承方式拓展
+2. 存储介质可调整：可以自己实现 Redis 作为时序数据库进行指标存储，只需要实现 MetricStorage 接口即可
+3. 聚合方式可拓展：可以自定义聚合函数，实现 Calculator 加入 Aggregator 即可
+4. 输出可配置：比如需要使用 API 导出 XML，可以继承 Terminal 和 Formatter 实现

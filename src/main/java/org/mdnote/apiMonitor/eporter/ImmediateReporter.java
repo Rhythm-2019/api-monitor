@@ -3,11 +3,12 @@ package org.mdnote.apiMonitor.eporter;
 import lombok.extern.slf4j.Slf4j;
 import org.mdnote.apiMonitor.aggregator.AggregateResult;
 import org.mdnote.apiMonitor.aggregator.Aggregator;
+import org.mdnote.apiMonitor.eporter.terminal.Terminal;
+import org.mdnote.apiMonitor.exception.AggregateException;
 import org.mdnote.apiMonitor.exception.MetricStorageException;
 import org.mdnote.apiMonitor.metric.ClientMetric;
 import org.mdnote.apiMonitor.metric.ServerMetric;
 import org.mdnote.apiMonitor.storage.MetricStorage;
-import org.mdnote.apiMonitor.viewer.Terminal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,19 +16,31 @@ import java.util.List;
 /**
  * @author Rhythm-2019
  * @date 2022/8/5
- * @description
+ * @description 聚合结果上报，
  */
 @Slf4j
-public class Reporter {
+public class ImmediateReporter {
 
-    private MetricStorage metricStorage;
-    private Aggregator aggregator;
-    private Terminal terminal;
+    protected MetricStorage metricStorage;
 
-    private String serverName;
-    private List<String> uris;
+    protected Aggregator aggregator;
 
-    public Reporter(String serverName, List<String> uris, MetricStorage metricStorage, Aggregator aggregator, Terminal terminal) {
+    protected Terminal terminal;
+
+    protected String serverName;
+
+    protected List<String> uris;
+
+    /**
+     * 构造方法
+     *
+     * @param serverName    服务名，用于作为存储标识
+     * @param uris          uri集合，指定需要上报哪些 uri
+     * @param metricStorage 从指定存储介质拉取数据
+     * @param aggregator    聚合器，用于计算聚合结果
+     * @param terminal      输出终端
+     */
+    public ImmediateReporter(String serverName, List<String> uris, MetricStorage metricStorage, Aggregator aggregator, Terminal terminal) {
         this.serverName = serverName;
         this.uris = uris;
         this.metricStorage = metricStorage;
@@ -46,11 +59,13 @@ public class Reporter {
             try {
                 serverMetricList = this.metricStorage.getServerMetric(serverName, uri, startTimeMillis, endTimeMillis);
                 clientMetricList = this.metricStorage.getClientMetric(serverName, uri, startTimeMillis, endTimeMillis);
+
+                resultList.add(this.aggregator.aggregate(clientMetricList, serverMetricList, durationMillis));
             } catch (MetricStorageException e) {
-                log.error("failed to aggregate metric, error is {}", e.getMessage());
-                return;
+                log.error("failed to get metric in {}, error is {}", uri, e.getMessage());
+            } catch (AggregateException e) {
+                log.error("failed to aggregate metric in {}, error is {}", uri, e.getMessage());
             }
-            resultList.add(this.aggregator.aggregate(clientMetricList, serverMetricList, durationMillis));
         }
         this.terminal.output(resultList);
     }

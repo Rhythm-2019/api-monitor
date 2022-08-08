@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
  * @date 2022/8/5
  * @description 本地存储，使用跳跃表实现
  */
-public class LocalStorage implements MetricStorage {
+public class LocalStorage extends MetricStorage {
 
     private static final int MEMORY_CLEAR_DURATION_MIN = 30;
     private LocalMetricHolder<ClientMetric> clientMetricHolder;
@@ -27,21 +27,38 @@ public class LocalStorage implements MetricStorage {
 
     @Override
     public void saveMetric(ClientMetric metric) throws MetricStorageException {
-        clientMetricHolder.put(metric);
+        try {
+            clientMetricHolder.put(metric);
+        } catch (Exception e) {
+            throw new MetricStorageException("save client metric failed", e);
+        }
     }
 
     @Override
     public void saveMetric(ServerMetric metric) throws MetricStorageException {
-        serverMetricHolder.put(metric);
+        try {
+            serverMetricHolder.put(metric);
+        } catch (Exception e) {
+            throw new MetricStorageException("save client metric failed", e);
+        }
     }
 
     @Override
     public List<ClientMetric> getClientMetric(String serverName, String uri, long startTimeInMillis, long endTimeInMillis) throws MetricStorageException {
-        return this.clientMetricHolder.list(serverName, uri, startTimeInMillis, endTimeInMillis);
+        try {
+            return this.clientMetricHolder.list(serverName, uri, startTimeInMillis, endTimeInMillis);
+        } catch (Exception e) {
+            throw new MetricStorageException("get client metric failed", e);
+        }
     }
 
     @Override
     public List<ServerMetric> getServerMetric(String serverName, String uri, long startTimeInMillis, long endTimeInMillis) throws MetricStorageException {
-        return this.serverMetricHolder.list(serverName, uri, startTimeInMillis, endTimeInMillis);
+        try {
+            return this.serverMetricHolder.list(serverName, uri, startTimeInMillis, endTimeInMillis);
+        } catch (Exception e) {
+            throw new MetricStorageException("put server metric failed", e);
+        }
+
     }
 }

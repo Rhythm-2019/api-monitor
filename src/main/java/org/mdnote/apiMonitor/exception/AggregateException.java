@@ -3,18 +3,18 @@ package org.mdnote.apiMonitor.exception;
 /**
  * @author Rhythm-2019
  * <p>
- * 指标存储异常，会在数据库连接、或者内存溢出时抛出
+ * 聚合异常，会在聚合计算时抛出，用户也可以在聚合函数中手动抛出
  */
-public class MetricStorageException extends Exception {
+public class AggregateException extends RuntimeException {
 
     private String msg;
 
-    public MetricStorageException(String msg) {
+    public AggregateException(String msg) {
         super(msg);
         this.msg = msg;
     }
 
-    public MetricStorageException(String msg, Throwable t) {
+    public AggregateException(String msg, Throwable t) {
         super(msg, t);
         this.msg = msg;
     }

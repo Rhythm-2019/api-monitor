@@ -8,7 +8,7 @@ import org.mdnote.apiMonitor.aggregator.AggregateResult;
  * @date 2022/8/5
  * @description JSON 格式化
  */
-public class jsonFormatter implements Formatter {
+public class JsonFormatter implements Formatter {
 
     @Override
     public String format(AggregateResult aggregateResult) {
