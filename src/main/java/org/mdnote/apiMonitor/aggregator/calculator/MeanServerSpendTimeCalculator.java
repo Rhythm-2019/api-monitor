@@ -1,8 +1,6 @@
 package org.mdnote.apiMonitor.aggregator.calculator;
 
-import org.mdnote.apiMonitor.aggregator.AggregateResult;
 import org.mdnote.apiMonitor.exception.AggregateException;
-import org.mdnote.apiMonitor.metric.ClientMetric;
 import org.mdnote.apiMonitor.metric.ServerMetric;
 
 import java.util.List;
@@ -12,15 +10,17 @@ import java.util.List;
  * @date 2022/8/5
  * @description 平均 RT = 总 RT / 请求数
  */
-public class MeanServerSpendTimeCalculator implements Calculator {
+public class MeanServerSpendTimeCalculator implements ServerAggregateCalculator {
+
     @Override
-    public void calculate(List<ClientMetric> clientMetricList, List<ServerMetric> serverMetricList, int durationMillis, AggregateResult aggregateResult) throws AggregateException {
-        if (serverMetricList.isEmpty()) {
-            return;
+    public Object calculate(List<ServerMetric> metricList, long durationMillis) throws AggregateException {
+        if (metricList.isEmpty()) {
+            return null;
         }
-        aggregateResult.setMeanServerSpendTime(serverMetricList.stream()
+        return metricList.stream()
                 .map(ServerMetric::getSpendTime)
                 .reduce(Long::sum)
-                .get() * 1.0 / serverMetricList.size());
+                .get() * 1.0 / metricList.size();
+
     }
 }

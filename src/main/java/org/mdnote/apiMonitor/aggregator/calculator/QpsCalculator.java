@@ -1,8 +1,7 @@
 package org.mdnote.apiMonitor.aggregator.calculator;
 
-import org.mdnote.apiMonitor.aggregator.AggregateResult;
+import org.jetbrains.annotations.NotNull;
 import org.mdnote.apiMonitor.exception.AggregateException;
-import org.mdnote.apiMonitor.metric.ClientMetric;
 import org.mdnote.apiMonitor.metric.ServerMetric;
 
 import java.util.List;
@@ -12,12 +11,14 @@ import java.util.List;
  * @date 2022/8/5
  * @description QPS = PV / duration
  */
-public class QpsCalculator implements Calculator {
+public class QpsCalculator implements ServerAggregateCalculator {
+
     @Override
-    public void calculate(List<ClientMetric> clientMetricList, List<ServerMetric> serverMetricList, int durationMillis, AggregateResult aggregateResult) throws AggregateException {
-        if (serverMetricList.isEmpty()) {
-            return;
+    public Object calculate(@NotNull List<ServerMetric> metricList, long durationMillis) throws AggregateException {
+        if (metricList.isEmpty()) {
+            return null;
         }
-        aggregateResult.setQps(serverMetricList.size() * 1.0 / durationMillis);
+        return metricList.size() * 1.0 / durationMillis;
+
     }
 }

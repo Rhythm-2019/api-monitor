@@ -1,9 +1,7 @@
 package org.mdnote.apiMonitor.aggregator.calculator;
 
-import org.mdnote.apiMonitor.aggregator.AggregateResult;
 import org.mdnote.apiMonitor.exception.AggregateException;
 import org.mdnote.apiMonitor.metric.ClientMetric;
-import org.mdnote.apiMonitor.metric.ServerMetric;
 
 import java.util.List;
 
@@ -12,15 +10,17 @@ import java.util.List;
  * @date 2022/8/5
  * @description 平均 RT = 总 RT / 请求数
  */
-public class MeanRTCalculator implements Calculator {
+public class MeanRTCalculator implements ClientAggregateCalculator {
+
     @Override
-    public void calculate(List<ClientMetric> clientMetricList, List<ServerMetric> serverMetricList, int durationMillis, AggregateResult aggregateResult) throws AggregateException {
-        if (clientMetricList.isEmpty()) {
-            return;
+    public Object calculate(List<ClientMetric> metricList, long durationMillis) throws AggregateException {
+        if (metricList.isEmpty()) {
+            return null;
         }
-        aggregateResult.setMeanRT(clientMetricList.stream()
+        return metricList.stream()
                 .map(ClientMetric::getRt)
                 .reduce(Long::sum)
-                .get() * 1.0 / clientMetricList.size());
+                .get() * 1.0 / metricList.size();
+
     }
 }

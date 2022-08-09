@@ -1,11 +1,12 @@
 package org.mdnote.apiMonitor;
 
 import org.junit.Test;
-import org.mdnote.apiMonitor.aggregator.AggregatorFactory;
+import org.mdnote.apiMonitor.aggregator.AggregateResult;
+import org.mdnote.apiMonitor.aggregator.Aggregator;
 import org.mdnote.apiMonitor.collecter.DefaultMetricCollector;
-import org.mdnote.apiMonitor.eporter.ScheduleReport;
-import org.mdnote.apiMonitor.eporter.formatter.JsonFormatter;
-import org.mdnote.apiMonitor.eporter.terminal.ConsoleTerminal;
+import org.mdnote.apiMonitor.reporter.ScheduleReport;
+import org.mdnote.apiMonitor.reporter.formatter.JsonFormatter;
+import org.mdnote.apiMonitor.reporter.terminal.ConsoleTerminal;
 import org.mdnote.apiMonitor.metric.ClientMetric;
 import org.mdnote.apiMonitor.storage.local.LocalStorage;
 
@@ -37,7 +38,7 @@ public class APIWatchTest {
             }
         }).start();
 
-        ScheduleReport scheduleReport = new ScheduleReport("server-test", Arrays.asList("111", "222"), localStorage, AggregatorFactory.clientAggregator(), new ConsoleTerminal(new JsonFormatter()));
+        ScheduleReport scheduleReport = new ScheduleReport("server-test", Arrays.asList("111", "222"), localStorage, new Aggregator(AggregateResult.class), new ConsoleTerminal(new JsonFormatter()));
         scheduleReport.start(3_000, 10_000);
 
         Thread.currentThread().join();

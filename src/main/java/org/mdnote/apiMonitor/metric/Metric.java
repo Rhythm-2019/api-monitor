@@ -1,8 +1,8 @@
 package org.mdnote.apiMonitor.metric;
 
 import lombok.Data;
-import org.mdnote.apiMonitor.metric.annotation.MetricField;
-import org.mdnote.apiMonitor.metric.annotation.Timestamp;
+import org.mdnote.apiMonitor.annotation.MetricField;
+import org.mdnote.apiMonitor.annotation.Timestamp;
 
 /**
  * @author Rhythm-2019

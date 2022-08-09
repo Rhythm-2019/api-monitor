@@ -4,8 +4,8 @@ import org.mdnote.apiMonitor.exception.MetricStorageException;
 import org.mdnote.apiMonitor.metric.ClientMetric;
 import org.mdnote.apiMonitor.metric.Metric;
 import org.mdnote.apiMonitor.metric.ServerMetric;
-import org.mdnote.apiMonitor.metric.annotation.MetricField;
-import org.mdnote.apiMonitor.metric.annotation.Timestamp;
+import org.mdnote.apiMonitor.annotation.MetricField;
+import org.mdnote.apiMonitor.annotation.Timestamp;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;

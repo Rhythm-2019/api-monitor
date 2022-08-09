@@ -2,7 +2,7 @@ package org.mdnote.apiMonitor.metric;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.mdnote.apiMonitor.metric.annotation.MetricField;
+import org.mdnote.apiMonitor.annotation.MetricField;
 
 /**
  * @author Rhythm-2019
